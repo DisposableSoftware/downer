@@ -8,7 +8,7 @@ A minimal GTK 4 Markdown viewer for Linux, built for Hyprland. Display name **Do
 |----|-------------|--------|-------------|
 | `PROD-1` | Lightweight and minimal: few dependencies, no libadwaita, fast startup. | done (ongoing constraint) | code review |
 | `PROD-2` | Follow a freedesktop/XDG spec wherever one exists for the behaviour. | done (ongoing constraint) | code review |
-| `PROD-3` | Launching `downer` opens a window titled "Downer". This is the starting skeleton; what it shows is still to be specified. | done | `scripts/manual/window.sh` |
+| `PROD-3` | Launching `downer` with no arguments opens a window titled "Downer". What it shows is in `NAV-3`, and what files open is in `NAV-1`. | done | `scripts/manual/window.sh` |
 
 ## Non-goals
 
@@ -18,5 +18,5 @@ A minimal GTK 4 Markdown viewer for Linux, built for Hyprland. Display name **Do
 
 - Rust and gtk4-rs (`gtk4` 0.11 with feature `gnome_49`), built with Nix.
 - Use GIO/GLib for anything they provide (XDG dirs, MIME, file monitoring) rather than reimplementing it or adding a crate.
-- Ask before adding a crate.
+- Ask before adding a crate. Approved: `pulldown-cmark` (Markdown parsing, `VIEW-3`…`VIEW-5`), because GTK has no parser.
 - File I/O is async through GIO. The main loop never blocks on I/O.

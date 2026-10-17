@@ -7,9 +7,14 @@ This folder is the source of truth for what Downer does. The code implements the
 | File | Prefix | Covers |
 |------|--------|--------|
 | [product.md](product.md) | `PROD` | Goals, non-goals, platform and stack constraints |
+| [view.md](view.md) | `VIEW` | Rendering Markdown in the window |
+| [navigation.md](navigation.md) | `NAV` | Opening files and windows, reloading |
+| [appearance.md](appearance.md) | `LOOK` | Catppuccin and GTK theme colours, type |
+| [configuration.md](configuration.md) | `CONF` | `config.ini`, `style.css` |
+| [integration.md](integration.md) | `INT` | freedesktop and Nix integration |
 | [roadmap.md](roadmap.md) | — | The order of planned work |
 
-Add a file per area as features arrive (for example `VIEW` for rendering, `NAV` for opening files and windows, `KEY` for keybindings, `CONF` for configuration, `LOOK` for appearance, `INT` for freedesktop and Nix integration), and list it here.
+Add a file per area as features arrive (for example `KEY` for keybindings), and list it here.
 
 ## Requirement format
 
@@ -17,7 +22,7 @@ Each requirement is one line in a table:
 
 | ID | Requirement | Status | Verified by |
 |----|-------------|--------|-------------|
-| `VIEW-1` | One sentence that can be checked. | done | `render::tests` |
+| `EXAMPLE-1` | One sentence that can be checked. | done | `module::tests` |
 
 - **IDs are permanent.** Do not renumber them or reuse one. When a requirement is dropped, keep its row, set the status to `dropped`, and give the reason.
 - **Status** is one of:

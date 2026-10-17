@@ -1,0 +1,87 @@
+---
+name: feature
+description: Turn a feature or change request for Downer into spec changes, get the user's approval, then implement and verify it against the spec. Use when the user runs /feature, or asks for new behaviour or a change to existing behaviour.
+argument-hint: <what the feature should do>
+disable-model-invocation: true
+---
+
+# /feature — spec first, approval, then code
+
+Request: $ARGUMENTS
+
+Follow the spec-first workflow in `CLAUDE.md`. This skill adds an approval gate between the spec and the code. **Write no code until the user approves the spec change.**
+
+## 1. Understand
+
+1. Read `spec/README.md`, `spec/roadmap.md`, and every spec file the request touches. Search all of `spec/` for related IDs. A feature often touches several areas, such as a new action that also needs a keybinding and a config option. If no spec file covers an area yet, create one and add it to the table in `spec/README.md`.
+2. Look at the code only to see what exists now. Don't plan code yet.
+3. If the request has a real ambiguity that changes the behaviour, ask before drafting: use `AskUserQuestion` with concrete options, and put a recommended option first. Don't ask about details the spec's conventions already settle (the conventions in `spec/product.md`).
+
+## 2. Check the request for contradictions
+
+Before drafting, test the request against the whole spec. Stop and confirm with the user when the request:
+
+- **Doesn't make sense as written:** it can't be checked, it describes something impossible with the stack (e.g. needs libadwaita), or it conflicts with itself.
+- **Directly contradicts an existing requirement:** for example, a request to bind a key that a requirement already gives to another action, or to change something a `done` requirement fixes.
+- **Conflicts with a non-goal or stack constraint** in `spec/product.md` (e.g. "add a status bar").
+
+Don't guess and don't quietly pick a side. Ask with `AskUserQuestion`. Quote the request and every conflicting row (ID and text). Explain the conflict in a sentence, and offer concrete options:
+
+- **Update the conflicting requirements** (when the request is clearly the newer intent): list exactly how each conflicting row will change.
+- **Adjust the request** so it fits the existing spec: give the reworded requirement.
+- **Something else / cancel.**
+
+If the user confirms updating the conflicts, change every affected row as part of this spec change:
+
+- **Reworded requirement:** edit its text in place and reset its status to `planned`, because the code must change.
+- **Requirement that no longer applies:** set the status to `dropped`, with the reason `superseded by <new ID>`.
+- **Non-goal or stack constraint:** edit `spec/product.md` and note it in the commit message.
+- **Machine-checked tables** (between `<!-- spec:NAME:begin/end -->` markers): update their rows so the tables stay consistent.
+- **References:** search `spec/` for the old IDs and behaviour (implementation notes, `roadmap.md`, the verification backlog) and update them.
+
+These edits are part of the diff in step 4, and listed separately there as **contradictions resolved**.
+
+If the user rejects the request, stop without editing the spec.
+
+## 3. Draft the spec change
+
+Edit `spec/` only:
+
+- **New behaviour:** add rows with the next free ID in the right prefix. Never reuse an ID. Set the status to `planned`. Write **Verified by** as the test or manual check you will use.
+- **Changed behaviour:** edit the existing row's text and reset its status to `planned`. Don't create a duplicate row.
+- **Removed behaviour:** set the status to `dropped` and give the reason. Keep the row.
+- **New binding or config key:** add it to the machine-checked table that lists them, if there is one (see `spec/README.md`). Keep its columns unchanged. `cargo test` will then fail until the code matches, which is intended.
+- Put each new planned item in `spec/roadmap.md` at a sensible position.
+- Each requirement is one checkable sentence about behaviour, not about implementation. Add **Implementation notes** only for constraints that aren't obvious.
+- Re-check the finished draft against step 2. Writing the rows sometimes exposes a conflict the request hid. If it does, go back to step 2 before asking for approval.
+
+## 4. Ask for approval
+
+Show the user:
+
+- The `git diff -- spec/` (summarise it if it's long, but show every new or changed row in full).
+- The IDs you added or changed, and anything you assumed.
+- **Contradictions resolved:** each conflicting row, as it was and as it is now, and the user's decision from step 2.
+- Other trade-offs you noticed.
+- How each requirement will be verified.
+
+Then ask with `AskUserQuestion`:
+
+- **Approve and implement** (recommended): commit the spec and build it.
+- **Approve spec only**: commit the spec with the rows left `planned`, and stop.
+- **Revise**: the user says what to change. Apply it, re-run step 2 on the change, then return to the start of step 4.
+- **Discard**: restore the spec files you changed (`git checkout -- <those files>`, and delete new files you created), then stop.
+
+Never treat silence, or an unrelated message, as approval.
+
+## 5. After approval
+
+1. Commit the spec on its own: `spec: <summary>` with the usual trailers.
+2. Implement the requirements. Do only what the approved rows say. If the code needs behaviour the spec doesn't describe, or implementing a row would break another requirement, stop. Handle it as in step 2 (confirm with the user, then update the spec) and get approval for the change before continuing.
+3. Verify (`CLAUDE.md` step 3):
+   - Run `cargo clippy --all-targets -- -D warnings`, `cargo test` (spec conformance included) and `nix build`.
+   - Check each ID as its **Verified by** column says. Add unit tests where possible.
+   - For manual checks on Hyprland, follow "Manual testing on Hyprland" in `CLAUDE.md`. If the user has Downer open, skip the check and say so.
+4. Update each row: `done`, or `partial` with the gap written in, and fill in **Verified by**. Update `roadmap.md`.
+5. Commit the code with a `Spec: ID, ID` trailer. Commit the status updates with it, or as a separate `spec:` commit.
+6. Report: the IDs, how each was verified, and anything left `partial` or unverified.

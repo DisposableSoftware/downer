@@ -49,7 +49,7 @@ src/config.rs      config.ini, first-run file                               CONF
 src/spec_tests.rs  spec conformance tests (row format, config table)
 data/              style.css, themes/<flavor>.css, config.example.ini, desktop entry
 scripts/manual/    UI checks (lib.sh helpers; headless.sh runs one in a headless sway)
-nix/               package.nix
+nix/               package.nix, nixos-module.nix, hm-module.nix                INT-4…INT-6
 spec/              the specification
 ```
 

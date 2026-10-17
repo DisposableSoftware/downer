@@ -25,6 +25,45 @@ nix develop
 cargo run
 ```
 
+## Installing on NixOS
+
+Add the flake as an input:
+
+```nix
+inputs.downer.url = "github:DisposableSoftware/downer";
+```
+
+System-wide, with the NixOS module:
+
+```nix
+imports = [ inputs.downer.nixosModules.default ];
+programs.downer = {
+  enable = true;
+  defaultMarkdownViewer = true; # xdg-open file.md opens Downer
+};
+```
+
+Or per user, with the home-manager module, which can also write the config:
+
+```nix
+imports = [ inputs.downer.homeManagerModules.default ];
+programs.downer = {
+  enable = true;
+  settings.appearance = {
+    flavor = "latte";
+    accent = "blue";
+    opacity = 0.9;
+  };
+  style = "window.downer .h1 { color: @red; }";
+  defaultMarkdownViewer = true;
+};
+xdg.mimeApps.enable = true; # home-manager only writes mimeapps.list when this is set
+```
+
+If you've run Downer before, it has already made a commented-out `~/.config/downer/config.ini`,
+and home-manager will refuse to replace it. Delete that file before setting `settings` (or set
+`home-manager.backupFileExtension`). There is also `overlays.default`, which adds `pkgs.downer`.
+
 ## Using it
 
 ```sh

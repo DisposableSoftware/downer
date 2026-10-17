@@ -2,7 +2,7 @@
 
 The order of `planned` requirements. Change it here when priorities change.
 
-Nothing is planned. Start with `/feature`.
+1. **NixOS install:** `INT-4`…`INT-7`.
 
 ## Verification backlog
 

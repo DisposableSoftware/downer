@@ -5,9 +5,8 @@
 cd "$(dirname "$0")/../.." || exit 1
 . scripts/manual/lib.sh
 require_no_instance
-P=$(hyprctl activeworkspace -j | jq -r .name)
-trap 'cleanup; hyprctl dispatch "hl.dsp.focus({ workspace = \"$P\" })" >/dev/null' EXIT
-hyprctl dispatch "hl.dsp.focus({ workspace = \"${WS:-7}\" })" >/dev/null; sleep 0.3
+
+use_workspace
 
 launch
 check "a window opens"   1 "$(win_count)"

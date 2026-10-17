@@ -18,6 +18,7 @@ rustPlatform.buildRustPackage {
       ../Cargo.toml
       ../Cargo.lock
       ../src
+      ../data
       ../spec
     ];
   };
@@ -28,6 +29,11 @@ rustPlatform.buildRustPackage {
     wrapGAppsHook4
   ];
   buildInputs = [ gtk4 ];
+
+  postInstall = ''
+    install -Dm644 data/io.github.DisposableSoftware.Downer.desktop -t $out/share/applications
+    install -Dm644 data/config.example.ini -t $out/share/doc/downer
+  '';
 
   meta = {
     description = "Minimal GTK4 Markdown viewer";

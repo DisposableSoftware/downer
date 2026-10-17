@@ -40,9 +40,15 @@ The flake only sees git-tracked files. Run `git add` on new files before `nix bu
 ## Code layout
 
 ```
-src/main.rs        GtkApplication, prgname, the window                       PROD-3
-src/spec_tests.rs  spec conformance tests (row format; tables as they appear)
-scripts/manual/    Hyprland-driven checks (lib.sh helpers)
+src/main.rs        GtkApplication (HANDLES_OPEN), prgname                    PROD-3, NAV-1
+src/view.rs        windows, loading, reload monitor, block widgets, links   VIEW NAV
+src/render.rs      Markdown -> block tree (no GTK), anchors, link resolving VIEW
+src/column.rs      max-width centred column widget                          VIEW-2
+src/theme.rs       Catppuccin palette or GTK theme colours, CSS              LOOK
+src/config.rs      config.ini, first-run file                               CONF
+src/spec_tests.rs  spec conformance tests (row format, config table)
+data/              style.css, themes/<flavor>.css, config.example.ini, desktop entry
+scripts/manual/    UI checks (lib.sh helpers; headless.sh runs one in a headless sway)
 nix/               package.nix
 spec/              the specification
 ```
@@ -59,9 +65,21 @@ spec/              the specification
 - Unit tests that use GTK must call `gtk::init()` and skip if it fails, because the `nix build` sandbox has no display. GTK may only be initialised on one thread, so keep GTK checks in one test.
 - Before anything goes public: no personal information (names, emails, home paths, hostnames) in code, fixtures, screenshots or commits. Commits are authored as DisposableSoftware's GitHub noreply address (set in the repo's git config).
 
-## Manual testing on Hyprland
+## Manual testing
 
-Prefer adding a script to `scripts/manual/` (source `lib.sh`, which has the guards below built in) over ad-hoc commands. Each script names the spec IDs it checks. Run it with `./scripts/manual/<name>.sh` after `nix build`.
+Prefer adding a script to `scripts/manual/` (source `lib.sh`, which has the guards below built in) over ad-hoc commands. Each script names the spec IDs it checks. Run it after `nix build`.
+
+### Headless (default)
+
+Run checks with `./scripts/manual/headless.sh ./scripts/manual/<name>.sh`. It starts a headless sway with its own D-Bus session, runtime dir and clipboard, so it works while the screen is locked or the user has Downer open, and never touches their windows. `lib.sh` switches to `swaymsg` when `DOWNER_HEADLESS` is set. The output is 3840×2160 at scale 2; set `DOWNER_RES` for a taller one (`render.sh` uses `3840x5000` to fit the whole sample).
+
+- The headless seat has no lasting pointer: each `wlrctl` call adds a virtual pointer and removes it, so GTK never sees its scrolls or clicks. Checks that scroll or click (`reload.sh`, `links.sh`) run on Hyprland.
+- Enter doesn't activate a link in a selectable label, and Tab into a selectable label selects all its text (`select.sh` relies on that).
+- `magick compare -metric AE` prints a float; `differ` in `lib.sh` cuts it to an integer and leaves out the overlay scrollbar.
+
+### On Hyprland
+
+Run `./scripts/manual/<name>.sh` directly.
 
 - Run visual tests on an empty workspace and switch back afterwards, and ask before a test that takes focus if the user is at the machine.
 - Screenshots: `hyprctl clients -j` gives the window geometry, and `grim -g` captures it. Use an `XDG_CONFIG_HOME` in a temp dir to test config variants, and sample files in a temp dir, never the user's own.

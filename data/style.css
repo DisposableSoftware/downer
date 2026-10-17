@@ -1,0 +1,129 @@
+/* Every rule is scoped to window.downer (LOOK-3). Palette names are defined by
+   data/themes/<flavor>.css, or from the GTK theme for flavor = gtk (LOOK-5). */
+
+window.downer {
+  background-color: @bg;
+  color: @text;
+}
+
+window.downer scrolledwindow,
+window.downer viewport {
+  background: none;
+}
+
+window.downer label {
+  color: @text;
+}
+
+window.downer label selection {
+  background-color: alpha(@accent, 0.3);
+  color: @text;
+}
+
+window.downer label link {
+  color: @accent;
+}
+
+window.downer label link:hover {
+  color: shade(@accent, 1.1);
+}
+
+window.downer .page-title {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+window.downer .dim {
+  color: @overlay1;
+}
+
+window.downer .heading {
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+window.downer .h1 {
+  font-size: 2em;
+  padding-bottom: 6px;
+  border-bottom: 1px solid @surface1;
+}
+
+window.downer .h2 {
+  font-size: 1.5em;
+  padding-bottom: 4px;
+  border-bottom: 1px solid @surface1;
+}
+
+window.downer .h3 {
+  font-size: 1.25em;
+}
+
+window.downer .h4 {
+  font-size: 1.1em;
+}
+
+window.downer .h5 {
+  font-size: 1em;
+}
+
+window.downer .h6 {
+  font-size: 0.9em;
+  color: @subtext0;
+}
+
+window.downer .code-block {
+  background-color: @mantle;
+  border-radius: 6px;
+}
+
+window.downer .code-block label.code {
+  font-family: monospace;
+  font-size: 0.9em;
+  padding: 12px;
+}
+
+window.downer .quote {
+  border-left: 3px solid @surface2;
+  padding-left: 12px;
+}
+
+window.downer .quote label {
+  color: @subtext0;
+}
+
+window.downer .marker {
+  color: @overlay1;
+}
+
+window.downer separator.rule {
+  background-color: @surface1;
+  min-height: 1px;
+  margin: 6px 0;
+}
+
+window.downer .table {
+  border-top: 1px solid @surface1;
+  border-left: 1px solid @surface1;
+}
+
+window.downer label.cell {
+  padding: 6px 12px;
+  border-right: 1px solid @surface1;
+  border-bottom: 1px solid @surface1;
+}
+
+window.downer label.th {
+  font-weight: bold;
+  background-color: @mantle;
+}
+
+window.downer checkbutton.task check {
+  background-color: transparent;
+  border: 1px solid @overlay1;
+  color: @base;
+}
+
+window.downer checkbutton.task check:checked {
+  background-color: @accent;
+  border-color: @accent;
+}

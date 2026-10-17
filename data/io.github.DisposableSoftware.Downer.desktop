@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Downer
+GenericName=Markdown Viewer
+Comment=View Markdown files
+Exec=downer %U
+Terminal=false
+StartupNotify=true
+StartupWMClass=io.github.DisposableSoftware.Downer
+MimeType=text/markdown;text/x-markdown;
+Categories=Utility;TextTools;Viewer;
+Keywords=markdown;md;readme;viewer;

@@ -12,7 +12,7 @@ This folder is the source of truth for what Downer does. The code implements the
 | [appearance.md](appearance.md) | `LOOK` | Catppuccin and GTK theme colours, type |
 | [configuration.md](configuration.md) | `CONF` | `config.ini`, `style.css` |
 | [integration.md](integration.md) | `INT` | freedesktop and Nix integration |
-| [roadmap.md](roadmap.md) | — | The order of planned work |
+| [roadmap.md](roadmap.md) | — | The order of planned work, which `/implement` follows |
 
 Add a file per area as features arrive (for example `KEY` for keybindings), and list it here.
 

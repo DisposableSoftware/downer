@@ -32,7 +32,8 @@ cargo clippy --all-targets -- -D warnings    # must pass
 cargo fmt
 cargo test                     # unit tests + spec conformance tests
 nix build                      # package -> ./result/bin/downer (also runs the tests)
-nix flake check                # tests, clippy and rustfmt
+nix flake check                # tests, clippy, rustfmt and the NixOS module
+git config core.hooksPath .githooks   # once per clone: enables the pre-push release check
 ```
 
 The flake only sees git-tracked files. Run `git add` on new files before `nix build` or `nix develop`. After adding crates, commit `Cargo.lock`, which `nix/package.nix` reads through `cargoLock.lockFile`. `spec/` is part of the package source, because the spec tests read it.
@@ -51,6 +52,10 @@ src/config.rs      config.ini, first-run file                               CONF
 src/spec_tests.rs  spec conformance tests (row format, config table)
 data/              style.css, themes/<flavor>.css, config.example.ini, desktop entry
 scripts/manual/    UI checks (lib.sh helpers; headless.sh runs one in a headless sway)
+scripts/screenshots.sh  README screenshots in docs/screenshots (run under headless.sh)
+scripts/release-check.sh  recommended version bump since the last v* tag (spec delta)
+scripts/release.sh  bump, commit "Downer X.Y.Z", tag, draft notes (no push)
+.githooks/pre-push  blocks history-backup; on a push of main offers to release
 nix/               package.nix, nixos-module.nix, hm-module.nix                INT-4…INT-6
 spec/              the specification
 ```

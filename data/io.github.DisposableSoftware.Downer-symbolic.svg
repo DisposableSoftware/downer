@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <!-- Downer, symbolic (LOOK-12): GTK recolours #2e3436. -->
+  <path fill="#2e3436" fill-rule="evenodd" d="M4 1h6.5A1.5 1.5 0 0 1 12 2.5V7h-1.5A3.5 3.5 0 0 0 7 10.5V15H4a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 4 1zM4.5 3v1.25h4V3zm0 2.75V6.75h5V5.75z"/>
+  <path fill="#2e3436" fill-rule="evenodd" d="M10.5 8.5h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2zM11.4 9.75v2.4H10.2L12 14.1l1.8-1.95h-1.2v-2.4z"/>
+</svg>

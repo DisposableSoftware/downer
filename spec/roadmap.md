@@ -2,7 +2,7 @@
 
 The order of `planned` requirements. Change it here when priorities change.
 
-1. App icon: `LOOK-11`, `LOOK-12`, with the desktop entry and package changes in `INT-2` and `INT-3`.
+Nothing is planned. Start with `/feature`.
 
 ## Verification backlog
 

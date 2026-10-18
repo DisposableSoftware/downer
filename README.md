@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/icon.svg" width="96" alt="Downer icon">
+</p>
+
 <h1 align="center">Downer</h1>
 
 <p align="center">A small GTK 4 Markdown viewer for Hyprland, in Catppuccin colours.</p>

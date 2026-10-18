@@ -32,6 +32,8 @@ rustPlatform.buildRustPackage {
 
   postInstall = ''
     install -Dm644 data/io.github.DisposableSoftware.Downer.desktop -t $out/share/applications
+    install -Dm644 data/io.github.DisposableSoftware.Downer.svg -t $out/share/icons/hicolor/scalable/apps
+    install -Dm644 data/io.github.DisposableSoftware.Downer-symbolic.svg -t $out/share/icons/hicolor/symbolic/apps
     install -Dm644 data/config.example.ini -t $out/share/doc/downer
   '';
 

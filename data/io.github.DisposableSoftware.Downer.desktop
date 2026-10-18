@@ -4,6 +4,7 @@ Name=Downer
 GenericName=Markdown Viewer
 Comment=View Markdown files
 Exec=downer %U
+Icon=io.github.DisposableSoftware.Downer
 Terminal=false
 StartupNotify=true
 StartupWMClass=io.github.DisposableSoftware.Downer

@@ -39,9 +39,6 @@ fn window(app: &gtk::Application, title: &str) -> gtk::ApplicationWindow {
         .default_height(700)
         .build();
     window.add_css_class("downer");
-    if std::env::var_os("DOWNER_DEBUG_FOCUS").is_some() {
-        window.connect_focus_widget_notify(|w| eprintln!("FOCUS {:?}", GtkWindowExt::focus(w).map(|f| (f.type_(), f.css_classes()))));
-    }
     window
 }
 
@@ -212,6 +209,7 @@ fn first_file(doc: &Rc<Doc>) {
         None if sidebar.files().is_empty() => set_main(doc, &centred("No Markdown files", "")),
         None => set_main(doc, &centred("Select a file", "")),
     }
+    sidebar.focus();
 }
 
 fn set_main(doc: &Doc, child: &impl IsA<gtk::Widget>) {

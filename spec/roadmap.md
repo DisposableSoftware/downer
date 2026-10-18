@@ -2,7 +2,7 @@
 
 The order of `planned` requirements. Change it here when priorities change.
 
-1. **Folder windows:** `NAV-2`, `NAV-4`, `NAV-6`…`NAV-9`, `LOOK-9`, `LOOK-10`.
+1. **Folder windows:** `VIEW-2`, `NAV-2`, `NAV-4`, `NAV-6`…`NAV-9`, `LOOK-9`, `LOOK-10`.
 2. **Live tree:** `NAV-10`.
 3. **Links inside the folder:** `NAV-11`, `VIEW-6`.
 

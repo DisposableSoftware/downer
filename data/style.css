@@ -185,6 +185,12 @@ window.downer .sidebar list.tree > row:hover {
   background-color: alpha(@surface0, 0.6);
 }
 
+/* Junk Drawer's focused items: a 1px accent outline, not the theme's ring. */
+window.downer .sidebar list.tree > row:focus-visible {
+  outline: 1px solid @accent;
+  outline-offset: -1px;
+}
+
 window.downer .sidebar list.tree > row.current {
   background-color: alpha(@accent, 0.25);
 }

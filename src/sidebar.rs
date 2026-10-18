@@ -220,6 +220,13 @@ impl Sidebar {
     }
 
     fn rebuild(&self) {
+        // The rows are replaced, so the focused one is found again by its URI.
+        let focused = self
+            .rows
+            .borrow()
+            .iter()
+            .find(|r| r.widget.is_focus())
+            .map(|r| r.uri.clone());
         while let Some(row) = self.list.row_at_index(0) {
             self.list.remove(&row);
         }
@@ -236,6 +243,16 @@ impl Sidebar {
         drop(tree);
         self.rows.replace(rows);
         self.update();
+        if let Some(uri) = focused {
+            let rows = self.rows.borrow();
+            let row = rows.iter().find(|r| r.uri == uri && r.widget.is_visible());
+            if let Some(row) = row {
+                row.widget.grab_focus();
+            } else {
+                drop(rows);
+                self.focus();
+            }
+        }
     }
 
     fn add_rows(&self, nodes: &[Node], depth: i32, parent: Option<usize>, rows: &mut Vec<Row>) {
@@ -328,6 +345,19 @@ impl Sidebar {
         } else {
             self.select(&uri);
             (self.on_open)(gio::File::for_uri(&uri));
+        }
+    }
+
+    /// Gives keyboard focus to the current row, or the first one (`NAV-8`).
+    pub fn focus(&self) {
+        let rows = self.rows.borrow();
+        let current = self.current.borrow();
+        let row = rows
+            .iter()
+            .find(|r| current.as_deref() == Some(r.uri.as_str()))
+            .or_else(|| rows.first());
+        if let Some(row) = row {
+            row.widget.grab_focus();
         }
     }
 

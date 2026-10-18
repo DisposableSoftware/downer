@@ -6,4 +6,3 @@ The order of approved work: `planned` requirements, and `partial` ones with a kn
 
 Built requirements that are not fully verified. Clear these before starting new planned work.
 
-- `VIEW-6`: open an `https` link and a relative `.md` link in a file window by clicking them on Hyprland, and check the browser and the default Markdown app open.

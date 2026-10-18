@@ -72,6 +72,10 @@ spec/              the specification
 - Unit tests that use GTK must call `gtk::init()` and skip if it fails, because the `nix build` sandbox has no display. GTK may only be initialised on one thread, so keep GTK checks in one test.
 - Before anything goes public: no personal information (names, emails, home paths, hostnames) in code, fixtures, screenshots or commits. Commits are authored as DisposableSoftware's GitHub noreply address (set in the repo's git config).
 
+## Releasing
+
+`/release` (`.claude/skills/release/`) pushes main and acts on `scripts/release-check.sh`'s recommendation: it releases a patch or minor bump without asking (`scripts/release.sh`, tidied notes, push, GitHub release), and asks first for a major one. Otherwise ask before pushing.
+
 ## Manual testing
 
 Prefer adding a script to `scripts/manual/` (source `lib.sh`, which has the guards below built in) over ad-hoc commands. Each script names the spec IDs it checks. Run it after `nix build`.

@@ -20,6 +20,9 @@ struct Doc {
     sidebar: RefCell<Option<Rc<Sidebar>>>,
     /// The main view: the document, or a centred message.
     main: gtk::Box,
+    /// The main view with the file name bar (`VIEW-11`) above it.
+    view: gtk::Box,
+    name_bar: gtk::Label,
     scrolled: gtk::ScrolledWindow,
     column: Column,
     anchors: RefCell<Vec<(String, gtk::Widget)>>,
@@ -124,13 +127,29 @@ fn new_doc(app: &gtk::Application, title: &str, folder: Option<gio::File>) -> Rc
         .hexpand(true)
         .child(&viewport)
         .build();
-    let main = gtk::Box::builder().hexpand(true).build();
+    let main = gtk::Box::builder().hexpand(true).vexpand(true).build();
+    let name_bar = gtk::Label::builder()
+        .css_classes(["file-name"])
+        .xalign(0.0)
+        .ellipsize(gtk::pango::EllipsizeMode::Start)
+        .focusable(false)
+        .can_target(false)
+        .visible(false)
+        .build();
+    let view = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .hexpand(true)
+        .build();
+    view.append(&name_bar);
+    view.append(&main);
     let doc = Rc::new(Doc {
         window: window.clone(),
         file: RefCell::default(),
         folder,
         sidebar: RefCell::default(),
         main,
+        view,
+        name_bar,
         scrolled,
         column,
         anchors: RefCell::default(),
@@ -153,7 +172,7 @@ fn new_doc(app: &gtk::Application, title: &str, folder: Option<gio::File>) -> Rc
 
 fn open_file_window(app: &gtk::Application, file: &gio::File) {
     let doc = new_doc(app, &format!("{} — Downer", name(file)), None);
-    doc.window.set_child(Some(&doc.main));
+    doc.window.set_child(Some(&doc.view));
     show_file(&doc, file);
     doc.window.present();
 }
@@ -184,7 +203,7 @@ fn open_folder(app: &gtk::Application, folder: &gio::File) {
     );
     let body = gtk::Box::new(gtk::Orientation::Horizontal, 0);
     body.append(&sidebar.widget);
-    body.append(&doc.main);
+    body.append(&doc.view);
     doc.window.set_child(Some(&body));
     doc.sidebar.replace(Some(sidebar));
     doc.window.present();
@@ -217,10 +236,13 @@ fn set_main(doc: &Doc, child: &impl IsA<gtk::Widget>) {
         doc.main.remove(&old);
     }
     doc.main.append(child);
+    doc.name_bar
+        .set_visible(child.upcast_ref::<gtk::Widget>() == doc.scrolled.upcast_ref::<gtk::Widget>());
 }
 
 fn update_title(doc: &Doc) {
     let file = doc.file.borrow().as_ref().map(name);
+    doc.name_bar.set_label(file.as_deref().unwrap_or_default());
     let title = match (&doc.folder, file) {
         (Some(folder), Some(file)) => format!("{file} — {} — Downer", name(folder)),
         (Some(folder), None) => format!("{} — Downer", name(folder)),

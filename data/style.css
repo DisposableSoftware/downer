@@ -198,3 +198,8 @@ window.downer .sidebar list.tree > row.current {
 window.downer .sidebar image.arrow {
   color: @overlay1;
 }
+
+window.downer label.file-name {
+  color: @overlay1;
+  padding: 8px 18px 0 16px;
+}

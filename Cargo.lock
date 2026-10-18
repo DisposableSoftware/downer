@@ -49,7 +49,7 @@ dependencies = [
 
 [[package]]
 name = "downer"
-version = "0.3.0"
+version = "1.0.0"
 dependencies = [
  "gtk4",
  "pulldown-cmark",

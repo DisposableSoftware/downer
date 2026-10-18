@@ -127,3 +127,68 @@ window.downer checkbutton.task check:checked {
   background-color: @accent;
   border-color: @accent;
 }
+
+/* Folder sidebar (LOOK-9, LOOK-10), after Junk Drawer's: 6px left padding plus 10px
+   row padding, and 10px row padding plus the 6px scrollbar gutter, make 16px a side. */
+window.downer scrolledwindow.sidebar {
+  background-color: alpha(@mantle, 0.4);
+  padding: 8px 0 8px 6px;
+  /* Themes draw a line on a sidebar's edge. */
+  border: none;
+  box-shadow: none;
+}
+
+window.downer .sidebar list.tree {
+  background: none;
+  margin-right: 6px;
+}
+
+window.downer scrolledwindow.sidebar > scrollbar,
+window.downer scrolledwindow.sidebar > scrollbar trough {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  min-width: 6px;
+}
+
+window.downer scrolledwindow.sidebar > scrollbar trough {
+  margin: 2px 0;
+}
+
+window.downer scrolledwindow.sidebar > scrollbar slider {
+  min-width: 4px;
+  margin: 0 1px;
+  border: none;
+  border-radius: 2px;
+  background-color: alpha(@overlay1, 0.5);
+}
+
+window.downer scrolledwindow.sidebar > scrollbar.hovering slider,
+window.downer scrolledwindow.sidebar > scrollbar.dragging slider {
+  background-color: @overlay1;
+}
+
+window.downer .sidebar list.tree > row {
+  color: @subtext1;
+  background: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  min-height: 0;
+}
+
+window.downer .sidebar list.tree > row label {
+  color: @subtext1;
+}
+
+window.downer .sidebar list.tree > row:hover {
+  background-color: alpha(@surface0, 0.6);
+}
+
+window.downer .sidebar list.tree > row.current {
+  background-color: alpha(@accent, 0.25);
+}
+
+window.downer .sidebar image.arrow {
+  color: @overlay1;
+}

@@ -1,9 +1,11 @@
 mod column;
 mod config;
 mod render;
+mod sidebar;
 #[cfg(test)]
 mod spec_tests;
 mod theme;
+mod tree;
 mod view;
 
 use gtk::{gio, glib, prelude::*};

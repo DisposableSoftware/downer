@@ -1,7 +1,9 @@
-//! Windows: one per file (`NAV-1`), the rendered document, reloading, links.
+//! Windows: one per file or folder (`NAV-1`, `NAV-6`), the rendered document,
+//! reloading, links.
 
 use crate::column::Column;
 use crate::render::{self, Align, Block, Colors, Inline, Target};
+use crate::sidebar::Sidebar;
 use gtk::{gdk, gio, glib, prelude::*};
 use std::cell::{Cell, RefCell};
 use std::rc::{Rc, Weak};
@@ -11,14 +13,22 @@ const RELOAD_DELAY: Duration = Duration::from_millis(150);
 
 struct Doc {
     window: gtk::ApplicationWindow,
-    file: gio::File,
+    /// The file shown in the main view; `None` in a folder window before one is picked.
+    file: RefCell<Option<gio::File>>,
+    /// The folder of a folder window.
+    folder: Option<gio::File>,
+    sidebar: RefCell<Option<Rc<Sidebar>>>,
+    /// The main view: the document, or a centred message.
+    main: gtk::Box,
     scrolled: gtk::ScrolledWindow,
     column: Column,
     anchors: RefCell<Vec<(String, gtk::Widget)>>,
     monitor: RefCell<Option<gio::FileMonitor>>,
     reload: RefCell<Option<glib::SourceId>>,
-    /// Whether the document has been rendered at least once.
+    /// Whether the current file has been rendered at least once.
     shown: Cell<bool>,
+    /// A heading to scroll to once the next rendering is laid out (`NAV-11`).
+    fragment: RefCell<Option<String>>,
 }
 
 fn window(app: &gtk::Application, title: &str) -> gtk::ApplicationWindow {
@@ -29,6 +39,9 @@ fn window(app: &gtk::Application, title: &str) -> gtk::ApplicationWindow {
         .default_height(700)
         .build();
     window.add_css_class("downer");
+    if std::env::var_os("DOWNER_DEBUG_FOCUS").is_some() {
+        window.connect_focus_widget_notify(|w| eprintln!("FOCUS {:?}", GtkWindowExt::focus(w).map(|f| (f.type_(), f.css_classes()))));
+    }
     window
 }
 
@@ -38,6 +51,8 @@ fn centred(title: &str, detail: &str) -> gtk::Box {
         .spacing(6)
         .valign(gtk::Align::Center)
         .halign(gtk::Align::Center)
+        .hexpand(true)
+        .vexpand(true)
         .margin_start(24)
         .margin_end(24)
         .build();
@@ -47,15 +62,23 @@ fn centred(title: &str, detail: &str) -> gtk::Box {
         .justify(gtk::Justification::Center)
         .build();
     title.add_css_class("page-title");
-    let detail = gtk::Label::builder()
-        .label(detail)
-        .wrap(true)
-        .justify(gtk::Justification::Center)
-        .build();
-    detail.add_css_class("dim");
     page.append(&title);
-    page.append(&detail);
+    if !detail.is_empty() {
+        let detail = gtk::Label::builder()
+            .label(detail)
+            .wrap(true)
+            .justify(gtk::Justification::Center)
+            .build();
+        detail.add_css_class("dim");
+        page.append(&detail);
+    }
     page
+}
+
+fn name(file: &gio::File) -> String {
+    file.basename()
+        .map(|b| b.to_string_lossy().into_owned())
+        .unwrap_or_else(|| file.uri().to_string())
 }
 
 /// The window shown without arguments (`NAV-3`).
@@ -68,12 +91,32 @@ pub fn open_empty(app: &gtk::Application) {
     window.present();
 }
 
+/// Opens a file window, or a folder window when `file` is a folder (`NAV-6`).
 pub fn open(app: &gtk::Application, file: &gio::File) {
-    let name = file
-        .basename()
-        .map(|b| b.to_string_lossy().into_owned())
-        .unwrap_or_else(|| file.uri().to_string());
-    let window = window(app, &format!("{name} — Downer"));
+    let app = app.clone();
+    let file = file.clone();
+    // Holds the application while GIO answers, so it doesn't quit with no window.
+    let hold = app.hold();
+    glib::spawn_future_local(async move {
+        let is_dir = file
+            .query_info_future(
+                "standard::type",
+                gio::FileQueryInfoFlags::NONE,
+                glib::Priority::DEFAULT,
+            )
+            .await
+            .is_ok_and(|info| info.file_type() == gio::FileType::Directory);
+        if is_dir {
+            open_folder(&app, &file);
+        } else {
+            open_file_window(&app, &file);
+        }
+        drop(hold);
+    });
+}
+
+fn new_doc(app: &gtk::Application, title: &str, folder: Option<gio::File>) -> Rc<Doc> {
+    let window = window(app, title);
     let column = Column::new();
     let viewport = gtk::Viewport::builder()
         .child(&column)
@@ -81,46 +124,144 @@ pub fn open(app: &gtk::Application, file: &gio::File) {
         .build();
     let scrolled = gtk::ScrolledWindow::builder()
         .hscrollbar_policy(gtk::PolicyType::Never)
+        .hexpand(true)
         .child(&viewport)
         .build();
+    let main = gtk::Box::builder().hexpand(true).build();
     let doc = Rc::new(Doc {
         window: window.clone(),
-        file: file.clone(),
+        file: RefCell::default(),
+        folder,
+        sidebar: RefCell::default(),
+        main,
         scrolled,
         column,
         anchors: RefCell::default(),
         monitor: RefCell::default(),
         reload: RefCell::default(),
         shown: Cell::new(false),
+        fragment: RefCell::default(),
     });
-    watch(&doc);
     // The window owns the only strong reference, through this handler.
     let strong = doc.clone();
     window.connect_close_request(move |_| {
-        if let Some(monitor) = strong.monitor.take() {
-            monitor.cancel();
-        }
-        if let Some(id) = strong.reload.take() {
-            id.remove();
+        stop_watching(&strong);
+        if let Some(sidebar) = strong.sidebar.take() {
+            sidebar.stop();
         }
         glib::Propagation::Proceed
     });
-    load(&doc);
-    window.present();
+    doc
+}
+
+fn open_file_window(app: &gtk::Application, file: &gio::File) {
+    let doc = new_doc(app, &format!("{} — Downer", name(file)), None);
+    doc.window.set_child(Some(&doc.main));
+    show_file(&doc, file);
+    doc.window.present();
+}
+
+fn open_folder(app: &gtk::Application, folder: &gio::File) {
+    let doc = new_doc(
+        app,
+        &format!("{} — Downer", name(folder)),
+        Some(folder.clone()),
+    );
+    let open = Rc::downgrade(&doc);
+    let scanned = Rc::downgrade(&doc);
+    let sidebar = Sidebar::new(
+        folder,
+        move |file| {
+            if let Some(doc) = open.upgrade() {
+                show_file(&doc, &file);
+            }
+        },
+        move |result, first| {
+            let Some(doc) = scanned.upgrade() else { return };
+            match result {
+                Err(e) => set_main(&doc, &centred(&folder_name(&doc), e.message())),
+                Ok(()) if first => first_file(&doc),
+                Ok(()) => {}
+            }
+        },
+    );
+    let body = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+    body.append(&sidebar.widget);
+    body.append(&doc.main);
+    doc.window.set_child(Some(&body));
+    doc.sidebar.replace(Some(sidebar));
+    doc.window.present();
+}
+
+fn folder_name(doc: &Doc) -> String {
+    doc.folder
+        .as_ref()
+        .map(|f| f.parse_name().to_string())
+        .unwrap_or_default()
+}
+
+/// What a folder window opens with (`NAV-9`).
+fn first_file(doc: &Rc<Doc>) {
+    let sidebar = doc.sidebar.borrow().clone();
+    let Some(sidebar) = sidebar else { return };
+    match sidebar.first_file() {
+        Some(file) => {
+            sidebar.select(&file.uri());
+            show_file(doc, &file);
+        }
+        None if sidebar.files().is_empty() => set_main(doc, &centred("No Markdown files", "")),
+        None => set_main(doc, &centred("Select a file", "")),
+    }
+}
+
+fn set_main(doc: &Doc, child: &impl IsA<gtk::Widget>) {
+    while let Some(old) = doc.main.first_child() {
+        doc.main.remove(&old);
+    }
+    doc.main.append(child);
+}
+
+fn update_title(doc: &Doc) {
+    let file = doc.file.borrow().as_ref().map(name);
+    let title = match (&doc.folder, file) {
+        (Some(folder), Some(file)) => format!("{file} — {} — Downer", name(folder)),
+        (Some(folder), None) => format!("{} — Downer", name(folder)),
+        (None, Some(file)) => format!("{file} — Downer"),
+        (None, None) => "Downer".to_owned(),
+    };
+    doc.window.set_title(Some(&title));
+}
+
+/// Shows `file` in the main view, from the top, and follows its changes (`NAV-5`).
+fn show_file(doc: &Rc<Doc>, file: &gio::File) {
+    stop_watching(doc);
+    doc.file.replace(Some(file.clone()));
+    doc.shown.set(false);
+    doc.scrolled.vadjustment().set_value(0.0);
+    update_title(doc);
+    watch(doc, file);
+    load(doc);
+}
+
+fn stop_watching(doc: &Doc) {
+    if let Some(monitor) = doc.monitor.take() {
+        monitor.cancel();
+    }
+    if let Some(id) = doc.reload.take() {
+        id.remove();
+    }
 }
 
 /// Renders the file again when it changes on disk (`NAV-5`).
-fn watch(doc: &Rc<Doc>) {
-    let monitor = match doc
-        .file
-        .monitor_file(gio::FileMonitorFlags::WATCH_MOVES, gio::Cancellable::NONE)
-    {
-        Ok(m) => m,
-        Err(e) => {
-            glib::g_warning!("downer", "can't watch {}: {}", doc.file.parse_name(), e);
-            return;
-        }
-    };
+fn watch(doc: &Rc<Doc>, file: &gio::File) {
+    let monitor =
+        match file.monitor_file(gio::FileMonitorFlags::WATCH_MOVES, gio::Cancellable::NONE) {
+            Ok(m) => m,
+            Err(e) => {
+                glib::g_warning!("downer", "can't watch {}: {}", file.parse_name(), e);
+                return;
+            }
+        };
     let weak = Rc::downgrade(doc);
     monitor.connect_changed(move |_, _, _, event| {
         use gio::FileMonitorEvent as E;
@@ -147,29 +288,34 @@ fn watch(doc: &Rc<Doc>) {
 }
 
 fn load(doc: &Rc<Doc>) {
+    let Some(file) = doc.file.borrow().clone() else {
+        return;
+    };
     let weak = Rc::downgrade(doc);
-    let file = doc.file.clone();
     glib::spawn_future_local(async move {
         let result = file.load_contents_future().await;
         let Some(doc) = weak.upgrade() else { return };
+        // Another file was picked while this one loaded.
+        if doc.file.borrow().as_ref() != Some(&file) {
+            return;
+        }
         match result {
-            Ok((bytes, _)) => show(&doc, &render::decode(&bytes)),
+            Ok((bytes, _)) => show(&doc, &file, &render::decode(&bytes)),
             // A deleted file keeps its last rendering (`NAV-5`).
             Err(e) if doc.shown.get() && e.matches(gio::IOErrorEnum::NotFound) => {}
             Err(e) => {
                 doc.shown.set(false);
-                doc.window
-                    .set_child(Some(&centred(&doc.file.parse_name(), e.message())));
+                set_main(&doc, &centred(&file.parse_name(), e.message()));
             }
         }
     });
 }
 
-fn show(doc: &Rc<Doc>, src: &str) {
+fn show(doc: &Rc<Doc>, file: &gio::File, src: &str) {
     let blocks = render::parse(src);
     let mut ctx = Ctx {
         doc: Rc::downgrade(doc),
-        base: doc.file.uri().to_string(),
+        base: file.uri().to_string(),
         colors: colors(&doc.window),
         anchors: Vec::new(),
     };
@@ -178,7 +324,18 @@ fn show(doc: &Rc<Doc>, src: &str) {
     doc.column.set_child(&content);
     doc.anchors.replace(ctx.anchors);
     if !doc.shown.replace(true) {
-        doc.window.set_child(Some(&doc.scrolled));
+        set_main(doc, &doc.scrolled);
+    }
+    if let Some(name) = doc.fragment.take() {
+        let weak = Rc::downgrade(doc);
+        doc.column.after_next_allocate(move || {
+            // Headings have their positions once this layout pass is done.
+            glib::idle_add_local_once(move || {
+                if let Some(doc) = weak.upgrade() {
+                    scroll_to(&doc, &name);
+                }
+            });
+        });
     }
 }
 
@@ -199,6 +356,16 @@ fn activate_link(doc: &Weak<Doc>, base: &str, href: &str) {
     match render::resolve(href, base) {
         Some(Target::Fragment(name)) => scroll_to(&doc, &name),
         Some(Target::Uri(uri)) => {
+            // A file of the folder's tree opens in the window (`NAV-11`).
+            let sidebar = doc.sidebar.borrow().clone();
+            if let Some(sidebar) = sidebar
+                && let Some((file, fragment)) = crate::tree::link_in_tree(&uri, &sidebar.files())
+            {
+                sidebar.select(&file);
+                show_file(&doc, &gio::File::for_uri(&file));
+                doc.fragment.replace(fragment);
+                return;
+            }
             gtk::UriLauncher::new(&uri).launch(
                 Some(&doc.window),
                 gio::Cancellable::NONE,

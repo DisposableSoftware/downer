@@ -3,6 +3,7 @@
 //! libadwaita.
 
 use gtk::{glib, prelude::*, subclass::prelude::*};
+use std::cell::RefCell;
 
 const MAX: i32 = 800;
 const PAD: i32 = 24;
@@ -11,7 +12,9 @@ mod imp {
     use super::*;
 
     #[derive(Default)]
-    pub struct Column;
+    pub struct Column {
+        pub after_allocate: RefCell<Option<Box<dyn FnOnce()>>>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for Column {
@@ -61,6 +64,9 @@ mod imp {
                 PAD as f32,
             ));
             child.allocate(w, (height - 2 * PAD).max(0), -1, Some(transform));
+            if let Some(f) = self.after_allocate.take() {
+                f();
+            }
         }
     }
 }
@@ -79,6 +85,11 @@ glib::wrapper! {
 impl Column {
     pub fn new() -> Self {
         glib::Object::new()
+    }
+
+    /// Runs  once, after the next time the child is laid out.
+    pub fn after_next_allocate(&self, f: impl FnOnce() + 'static) {
+        self.imp().after_allocate.replace(Some(Box::new(f)));
     }
 
     pub fn set_child(&self, child: &impl IsA<gtk::Widget>) {

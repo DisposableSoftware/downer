@@ -47,6 +47,7 @@ src/sidebar.rs     folder sidebar: async scan, directory monitors, rows     NAV-
 src/tree.rs        folder tree as data (no GTK): filter, sort, README, links NAV-7, NAV-9, NAV-11
 src/render.rs      Markdown -> block tree (no GTK), anchors, link resolving VIEW
 src/column.rs      75-character centred column widget                       VIEW-2
+src/table.rs       table widget with wrapping cells                         VIEW-10
 src/theme.rs       Catppuccin palette or GTK theme colours, CSS              LOOK
 src/config.rs      config.ini, first-run file                               CONF
 src/spec_tests.rs  spec conformance tests (row format, config table)

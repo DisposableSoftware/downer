@@ -17,7 +17,7 @@ for flavor in mocha latte frappe macchiato gtk; do
   check "$flavor: titled" "sample.md — Downer" "$(wins | jq -r '.[0].title')"
   shot "$OUT/$flavor.png"
   if [ "$flavor" = mocha ]; then
-    float_size 500 900; shot "$OUT/$flavor-narrow.png"
+    float_size 500 2400; shot "$OUT/$flavor-narrow.png"
     check "narrow: page doesn't scroll sideways" 500 "$(active '.size[0]')"
   fi
   kill_all

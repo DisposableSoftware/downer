@@ -4,6 +4,7 @@ mod render;
 mod sidebar;
 #[cfg(test)]
 mod spec_tests;
+mod table;
 mod theme;
 mod tree;
 mod view;

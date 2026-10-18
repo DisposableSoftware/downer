@@ -154,6 +154,11 @@ fn main() {
 | a | b | c |
 | a longer cell with `code` | **bold** | 1234.56 |
 
+| Wrapping | Notes |
+|:---------|------:|
+| this cell has a lot of long text that must wrap onto several lines instead of widening the table past the text column | right aligned text that also has to wrap onto more lines than one |
+| Supercalifragilisticexpialidocious_Supercalifragilisticexpialidocious_Supercalifragilisticexpialidocious | short |
+
 ---
 
 <div class="raw">

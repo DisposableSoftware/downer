@@ -4,6 +4,7 @@
 use crate::column::Column;
 use crate::render::{self, Align, Block, Colors, Inline, Target};
 use crate::sidebar::Sidebar;
+use crate::table::Table;
 use gtk::{gdk, gio, glib, prelude::*};
 use std::cell::{Cell, RefCell};
 use std::rc::{Rc, Weak};
@@ -644,16 +645,17 @@ impl Ctx {
         head: &[Vec<Inline>],
         rows: &[Vec<Vec<Inline>>],
     ) -> gtk::Widget {
-        let grid = gtk::Grid::new();
-        grid.add_css_class("table");
-        let cell = |inlines: &[Inline], col: usize, header: bool| {
+        let table = Table::new();
+        table.set_halign(gtk::Align::Start);
+        let cell = |inlines: &[Inline], row: usize, col: usize| {
             let label = self.label(inlines);
-            // Wrapping cells in a sideways-scrolling grid report inconsistent heights
-            // for a width, and GTK then gives the grid spare height.
-            label.set_wrap(false);
             label.add_css_class("cell");
-            if header {
+            if row == 0 {
                 label.add_css_class("th");
+                label.add_css_class("top");
+            }
+            if col == 0 {
+                label.add_css_class("left");
             }
             let (x, justify) = match align.get(col).copied().unwrap_or(Align::None) {
                 Align::Center => (0.5, gtk::Justification::Center),
@@ -665,22 +667,13 @@ impl Ctx {
             label
         };
         for (c, inlines) in head.iter().enumerate() {
-            grid.attach(&cell(inlines, c, true), c as i32, 0, 1, 1);
+            table.attach(&cell(inlines, 0, c), 0, c);
         }
         for (r, row) in rows.iter().enumerate() {
             for (c, inlines) in row.iter().enumerate() {
-                grid.attach(&cell(inlines, c, false), c as i32, r as i32 + 1, 1, 1);
+                table.attach(&cell(inlines, r + 1, c), r + 1, c);
             }
         }
-        let scrolled = gtk::ScrolledWindow::builder()
-            .hscrollbar_policy(gtk::PolicyType::Automatic)
-            .vscrollbar_policy(gtk::PolicyType::Never)
-            .halign(gtk::Align::Start)
-            .propagate_natural_width(true)
-            .valign(gtk::Align::Start)
-            .child(&grid)
-            .build();
-        scrolled.add_css_class("table-scroll");
-        scrolled.upcast()
+        table.upcast()
     }
 }

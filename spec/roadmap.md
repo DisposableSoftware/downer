@@ -2,7 +2,7 @@
 
 The order of approved work: `planned` requirements, and `partial` ones with a known bug from `/bug`. Change it here when priorities change. `/implement` works through this file: the verification backlog first, then the requirements in the order listed.
 
-Nothing is planned. Start with `/feature`.
+1. `VIEW-10`: table cells wrap, and tables no longer scroll sideways (`VIEW-2` reworded to match).
 
 ## Verification backlog
 

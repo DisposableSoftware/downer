@@ -1,11 +1,11 @@
-//! A single-child container that keeps its child at most `MAX` px wide and centred,
-//! with `PAD` px around it (`VIEW-2`). GTK has no max-width, and `AdwClamp` would need
+//! A single-child container that keeps its child at most `CHARS` characters of body
+//! text wide and centred, with `PAD` px around it (`VIEW-2`). GTK has no max-width, and `AdwClamp` would need
 //! libadwaita.
 
 use gtk::{glib, prelude::*, subclass::prelude::*};
 use std::cell::RefCell;
 
-const MAX: i32 = 800;
+const CHARS: i32 = 75;
 const PAD: i32 = 24;
 
 mod imp {
@@ -42,12 +42,17 @@ mod imp {
             };
             if orientation == gtk::Orientation::Horizontal {
                 let (min, _, _, _) = child.measure(orientation, -1);
-                (min + 2 * PAD, min.max(MAX) + 2 * PAD, -1, -1)
+                (
+                    min + 2 * PAD,
+                    min.max(max_width(&*self.obj())) + 2 * PAD,
+                    -1,
+                    -1,
+                )
             } else {
                 let width = if for_size < 0 {
                     -1
                 } else {
-                    child_width(&child, for_size)
+                    child_width(&*self.obj(), &child, for_size)
                 };
                 let (min, nat, _, _) = child.measure(orientation, width);
                 (min + 2 * PAD, nat + 2 * PAD, -1, -1)
@@ -58,7 +63,7 @@ mod imp {
             let Some(child) = self.obj().first_child() else {
                 return;
             };
-            let w = child_width(&child, width);
+            let w = child_width(&*self.obj(), &child, width);
             let transform = gtk::gsk::Transform::new().translate(&gtk::graphene::Point::new(
                 ((width - w) / 2) as f32,
                 PAD as f32,
@@ -71,9 +76,15 @@ mod imp {
     }
 }
 
-fn child_width(child: &gtk::Widget, width: i32) -> i32 {
+/// `CHARS` times the body font's approximate character width, in logical px.
+fn max_width(column: &impl IsA<gtk::Widget>) -> i32 {
+    let metrics = column.pango_context().metrics(None, None);
+    CHARS * metrics.approximate_char_width() / gtk::pango::SCALE
+}
+
+fn child_width(column: &impl IsA<gtk::Widget>, child: &gtk::Widget, width: i32) -> i32 {
     let (min, _, _, _) = child.measure(gtk::Orientation::Horizontal, -1);
-    (width - 2 * PAD).min(MAX).max(min)
+    (width - 2 * PAD).min(max_width(column)).max(min)
 }
 
 glib::wrapper! {
@@ -87,7 +98,7 @@ impl Column {
         glib::Object::new()
     }
 
-    /// Runs  once, after the next time the child is laid out.
+    /// Runs `f` once, after the next time the child is laid out.
     pub fn after_next_allocate(&self, f: impl FnOnce() + 'static) {
         self.imp().after_allocate.replace(Some(Box::new(f)));
     }

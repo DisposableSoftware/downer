@@ -42,8 +42,10 @@ The flake only sees git-tracked files. Run `git add` on new files before `nix bu
 ```
 src/main.rs        GtkApplication (HANDLES_OPEN), prgname                    PROD-3, NAV-1
 src/view.rs        windows, loading, reload monitor, block widgets, links   VIEW NAV
+src/sidebar.rs     folder sidebar: async scan, directory monitors, rows     NAV-6…NAV-10, LOOK-9
+src/tree.rs        folder tree as data (no GTK): filter, sort, README, links NAV-7, NAV-9, NAV-11
 src/render.rs      Markdown -> block tree (no GTK), anchors, link resolving VIEW
-src/column.rs      max-width centred column widget                          VIEW-2
+src/column.rs      75-character centred column widget                       VIEW-2
 src/theme.rs       Catppuccin palette or GTK theme colours, CSS              LOOK
 src/config.rs      config.ini, first-run file                               CONF
 src/spec_tests.rs  spec conformance tests (row format, config table)

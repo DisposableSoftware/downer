@@ -68,7 +68,11 @@ and home-manager will refuse to replace it. Delete that file before setting `set
 
 ```sh
 downer README.md notes.md   # one window per file
+downer ~/notes              # a folder: a sidebar with its Markdown files as a tree
 ```
+
+A folder window opens the folder's README if it has one, and its tree follows files being
+added, renamed and deleted. Links to other files in the folder open in the same window.
 
 Make it the default for Markdown with `xdg-mime default io.github.DisposableSoftware.Downer.desktop text/markdown`,
 and `xdg-open` will use it. Colours are set in `~/.config/downer/config.ini` (created on first run,

@@ -74,6 +74,11 @@ mkdir "$T/locked"; chmod 000 "$T/locked"
 launch "$T/locked"; check "unreadable folder: still a window" 1 "$(win_count)"; shot "$OUT/locked.png"; kill_all
 chmod 700 "$T/locked"
 launch "$P/a.md"; check "file window title" "a.md — Downer" "$(title)"; shot "$OUT/file.png"; kill_all
+# LOOK-9: the sidebar in every flavor (the notes folder, with its README current).
+for flavor in mocha latte frappe macchiato gtk; do
+  CFG=$T/cfg-$flavor; mkdir -p "$CFG/downer"; printf '[appearance]\nflavor=%s\n' "$flavor" >"$CFG/downer/config.ini"
+  CFG=$CFG launch "$N"; shot "$OUT/flavor-$flavor.png"; kill_all
+done
 check "no GTK warnings" 0 "$(grep -iE 'warning|critical' "$LOG" | grep -vc VK_SUBOPTIMAL)"
 echo "screenshots in $OUT"
 exit $FAILS

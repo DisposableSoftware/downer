@@ -1,6 +1,6 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i bash -p jq wtype grim imagemagick sway
-# Spec: NAV-1…NAV-4, PROD-3. Run from the repo root after `nix build`, with no Downer
+# Spec: NAV-1…NAV-4, NAV-6 (a folder opens a folder window), PROD-3. Run from the repo root after `nix build`, with no Downer
 # windows open. Screenshots go to $OUT.
 cd "$(dirname "$0")/../.." || exit 1
 . scripts/manual/lib.sh
@@ -32,7 +32,7 @@ kill_all
 mkdir "$T/folder.md"
 launch "$T/folder.md"
 shot "$OUT/folder.png"
-check "folder: still running" 1 "$(win_count)"
+check "folder: opens a folder window" "folder.md — Downer" "$(wins | jq -r '.[0].title')"
 kill_all
 echo "screenshots in $OUT"
 exit $FAILS

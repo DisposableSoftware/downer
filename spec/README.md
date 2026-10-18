@@ -35,6 +35,8 @@ Each requirement is one line in a table:
 
 `spec_tests::requirement_rows_are_well_formed` checks every row in `spec/*.md`: IDs are unique and the status is one of the four.
 
+`scripts/release-check.sh` reads the status column: a requirement that became `done` or `partial` since the last release means a minor bump. `/release` pushes `main` and acts on that recommendation.
+
 ## Machine-checked sections
 
 Tables between `<!-- spec:NAME:begin -->` and `<!-- spec:NAME:end -->` markers can be parsed by `src/spec_tests.rs` (`table(doc, "NAME")`) and compared with the code, so the spec can't silently drift. Use them for lists the code also has, such as default keybindings or config keys, and keep their column layout unchanged.

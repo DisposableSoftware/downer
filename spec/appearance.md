@@ -1,6 +1,6 @@
 # Appearance
 
-Colours and type. The theming follows Junk Drawer (DisposableSoftware's file manager), so the two apps look alike under the same config.
+Colours and type. The theming follows Junk Drawer (DisposableSoftware's file manager), so the two apps look alike under the same config. The wider rules are in the [DisposableSoftware style guide](https://github.com/DisposableSoftware/style-guide) (`docs/palette.md` and `docs/components.md` for this file). This spec wins on conflict. The palette is Catppuccin's (https://catppuccin.com).
 
 ## Requirements
 
@@ -19,6 +19,10 @@ Colours and type. The theming follows Junk Drawer (DisposableSoftware's file man
 | `LOOK-11` | The app icon, `io.github.DisposableSoftware.Downer` in the hicolor theme (a scalable SVG), is in Junk Drawer's icon style: a minimal, flat Markdown page seen from the front on a rounded `surface1` tile, with a `mauve` badge that holds a down arrow (Markdown's "M↓" mark), in Catppuccin mocha colours. It has no gradients, text or fine detail, so it still reads as a page with an arrow at 16px. Launchers show it through the desktop entry (`INT-2`). | done | manual (renders at 16, 32, 64 and 256px on mocha and latte, next to Junk Drawer's icon, approved by the user; `result/share/icons/hicolor/scalable/apps/io.github.DisposableSoftware.Downer.svg` installed) |
 | `LOOK-12` | A symbolic variant of the icon, `io.github.DisposableSoftware.Downer-symbolic` (an SVG in `hicolor/symbolic/apps`), draws the same page and arrow badge silhouette in one colour (`#2e3436`, recoloured by GTK) for panels and other symbolic contexts. | done | manual (renders at 16 and 32px, and recoloured on a dark background, approved by the user; installed in `result/share/icons/hicolor/symbolic/apps`) |
 | `LOOK-13` | The file name bar (`VIEW-11`) looks like the path bar in Junk Drawer: `overlay1` text on a transparent background, in the body font at the body size, with 8px top padding and 12px left and 18px right padding, and a further 4px before the text (where Junk Drawer has its up button). The text starts 16px from the left edge of the view. | done | `scripts/manual/filename-bar.sh` (the text starts 17px from the left edge, within the 16px plus glyph bearing; screenshots) ; the `overlay1` colour is the same rule as Junk Drawer's, checked by eye |
+| `LOOK-14` | Selected text is drawn in `text` on the accent at 35% opacity, as in Junk Drawer. This replaces the 30% in `LOOK-8`; its 3:1 contrast check stays and is run at 35%. Style guide: `docs/palette.md`, accent opacity recipes. | planned | `theme::tests::selected_text_contrasts_with_the_selection`, `scripts/manual/theme.sh` |
+| `LOOK-15` | The focus outline on sidebar rows is 1px at the accent with 80% opacity, inset by 1px, as in Junk Drawer, not the solid accent. Style guide: `docs/components.md`, borders and focus. | planned | manual (`scripts/manual/folder.sh` screenshot of the focused row) |
+| `LOOK-16` | Markdown heading labels do not use the stock GTK `heading` class name, so theme rules for it never apply to them. The `.h1` to `.h6` classes stay. Style guide: `docs/known-gaps.md`, stock class collision. | planned | `scripts/manual/render.sh` (headings unchanged), code review |
+| `LOOK-17` | Scrollbars in the main view are overlay scrollbars that never thin or thicken: the slider is 4px wide and the trough 6px wide in every state, and the slider has a 2px radius, as for the sidebar (`LOOK-10`). Style guide: `docs/components.md`, scrollbars. | planned | manual (`scripts/manual/render.sh` screenshots with the pointer over and away from the scrollbar) |
 
 ## Implementation notes
 

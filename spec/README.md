@@ -10,11 +10,12 @@ This folder is the source of truth for what Downer does. The code implements the
 | [view.md](view.md) | `VIEW` | Rendering Markdown in the window |
 | [navigation.md](navigation.md) | `NAV` | Opening files and windows, reloading |
 | [appearance.md](appearance.md) | `LOOK` | Catppuccin and GTK theme colours, type |
+| [keys.md](keys.md) | `KEY` | Keybindings and the shortcut overlay |
 | [configuration.md](configuration.md) | `CONF` | `config.ini`, `style.css` |
 | [integration.md](integration.md) | `INT` | freedesktop and Nix integration |
 | [roadmap.md](roadmap.md) | — | The order of planned work, which `/implement` follows |
 
-Add a file per area as features arrive (for example `KEY` for keybindings), and list it here.
+Add a file per area as features arrive, and list it here.
 
 ## Requirement format
 

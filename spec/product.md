@@ -10,6 +10,10 @@ A minimal GTK 4 Markdown viewer for Linux, built for Hyprland. Display name **Do
 | `PROD-2` | Follow a freedesktop/XDG spec wherever one exists for the behaviour. | done (ongoing constraint) | code review |
 | `PROD-3` | Launching `downer` with no arguments opens a window titled "Downer". What it shows is in `NAV-3`, and what files open is in `NAV-1`. | done | `scripts/manual/window.sh` |
 
+## Style guide
+
+Downer follows the [DisposableSoftware style guide](https://github.com/DisposableSoftware/style-guide), which describes the look, keybindings, config files and wording the DisposableSoftware apps share. This spec wins where the two disagree, and a look rule from the guide becomes a `LOOK` row here before it becomes code. The palette is Catppuccin, made by the Catppuccin community (https://catppuccin.com), not by DisposableSoftware.
+
 ## Non-goals
 
 - No libadwaita. It fights custom theming.

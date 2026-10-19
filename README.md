@@ -168,6 +168,10 @@ can't, such as rendering, reloading and the sidebar. Most run in a headless sway
 (`scripts/manual/headless.sh`), so they work with the screen locked. The README
 screenshots come from `scripts/screenshots.sh`.
 
+## Credits
+
+The colours are [Catppuccin](https://catppuccin.com), a community-driven pastel theme by the [Catppuccin organisation](https://github.com/catppuccin/catppuccin) and its contributors. The palette is theirs, not ours, and is MIT-licensed. The files in `data/themes/` carry the values from the [official palette](https://catppuccin.com/palette).
+
 ## License
 
 MIT, see [LICENSE](LICENSE).
